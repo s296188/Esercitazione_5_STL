@@ -1,36 +1,44 @@
-# pragma once
+#pragma once
 
-#include <iostream>
 #include <vector>
+#include <map>
+#include <list>
 #include <Eigen/Eigen>
 
 using namespace std;
 using namespace Eigen;
 
-namespace PolygonalLibrary {
-	
+
+namespace PolygonalLibrary
+{
+
 struct PolygonalMesh
 {
-	// 0D
-	unsigned int NumCell0Ds = 0;
-	vector<unsigned int> Cell0DsId = {};
-	MatrixXd Cell0DsCoordinates = {};
-	map<unsigned int, list<unsigned int>> Cell0DsMarkers = {};
-	
-	// 1D
-	unsigned int NumCell1Ds = 0;
-	vector<unsigned int> Cell1DsId = {};
-	MatrixXi Cell1DsExtrema = {};
-	map<unsigned int, list<unsigned int>> Cell1DsMarkers = {};
-	
-	// 2D
-	unsigned int NumCell2Ds = 0;
-	vector<unsigned int> Cell2DsId = {};
-	map<unsigned int, list<unsigned int>> NumCell2DsVertices = {};
-	vector<vector<unsigned int>> Cell2DsVertices = {};  
-	map<unsigned int, list<unsigned int>> NumCell2DsEdges = {};
-	vector<vector<unsigned int>> Cell2DsEdges = {};     
-	
-};
+	// Numero celle
+	unsigned int num_cell0d;
+	unsigned int num_cell1d;
+	unsigned int num_cell2d;
 
+	// ID
+	vector<unsigned int> id_cell0d;
+	vector<unsigned int> id_cell1d;
+	vector<unsigned int> id_cell2d;
+
+	// Marker
+	map<unsigned int, list<unsigned int>> marker_cell0d;
+	map<unsigned int, list<unsigned int>> marker_cell1d;
+	map<unsigned int, list<unsigned int>> marker_cell2d;
+
+	// Coordinate dei punti
+	MatrixXd coords_cell0d;
+
+	// Estremi dei lati
+	MatrixXi extrema_cell1d;
+
+	// Vertici del poligono
+	vector<vector<unsigned int>> vertices_cell2d;
+	// Lati del poligono
+	vector<vector<unsigned int>> edges_cell2d;
+
+};
 }

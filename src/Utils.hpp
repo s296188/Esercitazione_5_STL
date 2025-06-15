@@ -1,21 +1,23 @@
-#include "PolygonalMesh.hpp"
+#pragma once
+
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include "PolygonalMesh.hpp"
 
 using namespace std;
-
-namespace PolygonalLibrary {
-	
-/// Import the polygonal mesh and test if the mesh is correct
-bool ImportMesh(PolygonalMesh& mesh);
-
-/// Import the Cell0D properties from Cell0Ds.csv file
-bool ImportCell0Ds(PolygonalMesh& mesh);
-
-/// Import the Cell1D properties from Cell1Ds.csv file
-bool ImportCell1Ds(PolygonalMesh& mesh);
-
-/// Import the Cell2D properties from Cell2Ds.csv file
-bool ImportCell2Ds(PolygonalMesh& mesh);
+using namespace PolygonalLibrary;
 
 
-}
+bool Import_mesh(PolygonalMesh& mesh);
+
+bool Import_file(const string& file_name, list<string>& lines);
+
+bool Import_cell0d(PolygonalMesh& mesh);
+
+bool Import_cell1d(PolygonalMesh& mesh);
+
+bool Import_cell2d(PolygonalMesh& mesh);
+
+
+void print_markers(const map<unsigned int, list<unsigned int>>& markers);

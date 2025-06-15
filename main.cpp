@@ -1,12 +1,8 @@
-#include "src/Utils.hpp"
-#include "src/PolygonalMesh.hpp"
-#include "ExportParaview/UCDUtilities.hpp"
-#include <iostream>
-#include <array>
-#include <vector>
-#include <list>
-#include <map>
-
+#include <cmath>
+#include <limits>
+#include "PolygonalMesh.hpp"
+#include "Utils.hpp"
+#include "UCDUtilities.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -16,59 +12,68 @@ using namespace PolygonalLibrary;
 int main()
 {
 	PolygonalMesh mesh;
-	
-	if(!ImportMesh(mesh))
-	{
-		cerr << "file not found" << endl;
-		return 1;
+
+	if(!Import_mesh(mesh)) {
+		cerr << "Errore nell'aprire il file" << endl;
+		return false;
 	}
-	
+
+	// Esportazione
 	Gedim::UCDUtilities utilities;
-	{
-		vector<Gedim::UCDProperty<double>> cell0Ds_properties(1);
+	utilities.ExportPoints("./Cell0Ds.inp", mesh.coords_cell0d);
 
-		cell0Ds_properties[0].Label = "Marker";
-		cell0Ds_properties[0].UnitLabel = "-";
-		cell0Ds_properties[0].NumComponents = 1;
+	utilities.ExportSegments("./Cell1Ds.inp", mesh.coords_cell0d, mesh.extrema_cell1d);
 
-		vector<double> cell0Ds_marker(mesh.NumCell0Ds, 0.0);
-		for(const auto &m : mesh.Cell0DsMarkers)
-			for(const unsigned int id: m.second)
-				cell0Ds_marker.at(id) = m.first;
 
-		cell0Ds_properties[0].Data = cell0Ds_marker.data();
+	// Test marker
+	
+	cout << "Marker OD: " << endl;
+	print_markers(mesh.marker_cell0d);
 
-		utilities.ExportPoints("./Cell0Ds.inp",
-							   mesh.Cell0DsCoordinates,
-							   cell0Ds_properties);
+	cout << "Marker 1D: " << endl;
+	print_markers(mesh.marker_cell1d);
+
+	cout << "Marker 2D: " << endl;
+	print_markers(mesh.marker_cell2d);
+
+
+	// Test lunghezza lati
+
+	for(unsigned int i = 0; i < mesh.num_cell1d; i++) {
+		unsigned int extreme_1 = mesh.extrema_cell1d(0,i);
+		unsigned int extreme_2 = mesh.extrema_cell1d(1,i);
+
+		if(mesh.coords_cell0d.col(extreme_1).isApprox(mesh.coords_cell0d.col(extreme_2))) {
+			cerr << "Il lato " << i << " è lungo 0" << endl;
+			return false;
+		}
 	}
 
-	{
 
-		vector<Gedim::UCDProperty<double>> cell1Ds_properties(1);
+	// Test area poligoni
 
-		cell1Ds_properties[0].Label = "Marker";
-		cell1Ds_properties[0].UnitLabel = "-";
-		cell1Ds_properties[0].NumComponents = 1;
+	for(const auto& vec : mesh.edges_cell2d) {
 
-		vector<double> cell1Ds_marker(mesh.NumCell1Ds, 0.0);
-		for(const auto &m : mesh.Cell1DsMarkers)
-			for(const unsigned int id: m.second)
-				cell1Ds_marker.at(id) = m.first;
+		unsigned int len = vec.size();
+		double area = 0;
 
-		cell1Ds_properties[0].Data = cell1Ds_marker.data();
+		for(unsigned int i = 0; i < len; i++) {
+			unsigned int ex1 = mesh.extrema_cell1d(0, vec[i]);
+			unsigned int ex2 = mesh.extrema_cell1d(1, vec[i]);
 
-		utilities.ExportSegments("./Cell1Ds.inp",
-								 mesh.Cell0DsCoordinates,
-								 mesh.Cell1DsExtrema,
-								 {},
-								 cell1Ds_properties);
+			double x1 = mesh.coords_cell0d(0, ex1);
+			double y1 = mesh.coords_cell0d(1, ex1);
+			double x2 = mesh.coords_cell0d(0, ex2);
+			double y2 = mesh.coords_cell0d(1, ex2);
+
+			area += ((x1 * y2) - (x2 * y1));
+		}
+
+		area = 0.5 * abs(area);
+
+		if(area < numeric_limits<double>::epsilon())
+			cerr << "Poligono con area 0" << endl;
 	}
 
-	
-	
-	
-	
-	
-    return 0;
+	return 0;
 }
